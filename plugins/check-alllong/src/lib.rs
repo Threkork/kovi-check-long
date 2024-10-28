@@ -10,7 +10,6 @@ use std::sync::{Arc, Mutex, RwLock};
 
 mod detector;
 
-
 pub const LONG_MODEL: &[u8] = include_bytes!("../model/long.onnx");
 pub const NAILONG_MODEL: &[u8] = include_bytes!("../model/nailong.onnx");
 
@@ -226,6 +225,27 @@ async fn main() {
             let nailong_detector = nailong_detector.clone();
             let bot = bot.clone();
             async move {
+                let group_id = if let Some(group_id) = e.group_id {
+                    group_id
+                } else {
+                    return;
+                };
+
+                // Check whitelist
+                let long_should_check = {
+                    let whitelist = long_detector.whitelist.read().unwrap();
+                    whitelist.get(&group_id).copied().unwrap_or(false)
+                };
+
+                let nailong_should_check = {
+                    let whitelist = nailong_detector.whitelist.read().unwrap();
+                    whitelist.get(&group_id).copied().unwrap_or(false)
+                };
+
+                if !long_should_check && !nailong_should_check {
+                    return;
+                }
+
                 if let Some(v) = e.borrow_text() {
                     if v.trim() == long_detector.config.reply_output_img_cmd {
                         return;
@@ -257,12 +277,16 @@ async fn main() {
                     return;
                 }
 
-                long_detector
-                    .process_images(e.clone(), bot.clone(), imgs_data.clone(), false)
-                    .await;
-                nailong_detector
-                    .process_images(e, bot, imgs_data, false)
-                    .await;
+                if long_should_check {
+                    long_detector
+                        .process_images(e.clone(), bot.clone(), imgs_data.clone(), false)
+                        .await;
+                }
+                if nailong_should_check {
+                    nailong_detector
+                        .process_images(e, bot, imgs_data, false)
+                        .await;
+                }
             }
         }
     };

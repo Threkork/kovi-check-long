@@ -217,7 +217,6 @@ impl Detector {
         }
 
         e.reply_and_quote(msg);
-        tokio::time::sleep(Duration::from_secs(1)).await;
         if self.config.is_delete_message {
             bot.delete_msg(e.message_id);
         }
@@ -300,7 +299,7 @@ impl Detector {
         }
 
         e.reply_and_quote(msg);
-        tokio::time::sleep(Duration::from_secs(1)).await;
+
         if self.config.is_delete_message {
             bot.delete_msg(e.message_id);
         }
