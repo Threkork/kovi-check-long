@@ -24,5 +24,5 @@
 
 # 不想发这个模型出来，所以只有编译好的版本
 
-代码在 lib.rs 里
+代码在 [lib.rs](https://github.com/Threkork/kovi-check-long/blob/main/check-alllong/src/lib.rs) 里
 
